@@ -27,13 +27,17 @@ This document outlines the MongoDB schema design, relationships, and indexing st
 
 ### Cart
 - **Schema**: User-specific shopping cart.
+- **Fields**: `userId`, `items`, `totalAmount`, `isDeleted`, `deletedAt`.
 - **Design**: **Embedding** for cart items.
+- **Soft Delete**: Implemented with `isDeleted` flag and `deletedAt` timestamp.
 - **Rationale**: Carts are usually small and accessed frequently by the owner. Embedding reduces lookups.
 
 ### Order
 - **Schema**: Transactional history of purchases.
+- **Fields**: `userId`, `items`, `totalAmount`, `status`, `isDeleted`, `deletedAt`.
 - **Design**: **Hybrid (Snapshot)**.
-- **Rationale**: Order items are embedded snapshots. References to `userId` and `productId` are maintained, but product details (price, title) are snapshotted to preserve historical state.
+- **Soft Delete**: Implemented with `isDeleted` flag and `deletedAt` timestamp.
+- **Rationale**: Order items are embedded snapshots (`priceSnapshot`, `titleSnapshot`). References to `userId` and `productId` are maintained, but product details are snapshotted to preserve historical state.
 
 ---
 

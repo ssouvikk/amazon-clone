@@ -10,20 +10,25 @@ export class CartRepository implements ICartRepository {
 
   async create(userId: string): Promise<CartDocument> {
     const newCart = new this.cartModel({ userId, items: [], totalAmount: 0 });
-    return await newCart.save();
+    return newCart.save();
   }
 
   async findByUserId(userId: string): Promise<CartDocument | null> {
-    return await this.cartModel.findOne({ userId }).populate('items.productId').exec();
+    return this.cartModel.findOne({ userId, isDeleted: false }).populate('items.productId').exec();
   }
 
   async update(userId: string, cart: Partial<Cart>): Promise<CartDocument | null> {
-    return await this.cartModel
-      .findOneAndUpdate({ userId }, cart, { new: true, upsert: true })
+    return this.cartModel
+      .findOneAndUpdate({ userId, isDeleted: false }, cart, {
+        new: true,
+        upsert: true,
+      })
       .exec();
   }
 
   async clear(userId: string): Promise<void> {
-    await this.cartModel.findOneAndUpdate({ userId }, { items: [], totalAmount: 0 }).exec();
+    await this.cartModel
+      .findOneAndUpdate({ userId, isDeleted: false }, { items: [], totalAmount: 0 })
+      .exec();
   }
 }

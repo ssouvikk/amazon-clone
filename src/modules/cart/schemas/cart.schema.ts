@@ -27,6 +27,12 @@ export class Cart {
 
   @Prop({ default: 0 })
   totalAmount!: number;
+
+  @Prop({ default: false })
+  isDeleted!: boolean;
+
+  @Prop()
+  deletedAt?: Date;
 }
 
 export const CartSchema = SchemaFactory.createForClass(Cart);
