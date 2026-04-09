@@ -2,7 +2,12 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 
-export type UserDocument = User & Document;
+export type UserDocument = User & Document & UserMethods;
+
+export interface UserMethods {
+  comparePassword(candidate: string): Promise<boolean>;
+  compareRefreshToken(candidate: string): Promise<boolean>;
+}
 
 export enum UserRole {
   ADMIN = 'ADMIN',
@@ -35,8 +40,28 @@ export class User {
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
+// Hooks
 UserSchema.pre('save', async function (this: UserDocument) {
   if (this.isModified('password')) {
     this.password = await bcrypt.hash(this.password, 10);
   }
+  if (this.isModified('refreshToken') && this.refreshToken) {
+    this.refreshToken = await bcrypt.hash(this.refreshToken, 10);
+  }
 });
+
+// Methods
+UserSchema.methods['comparePassword'] = async function (
+  this: UserDocument,
+  candidate: string,
+): Promise<boolean> {
+  return bcrypt.compare(candidate, this.password);
+};
+
+UserSchema.methods['compareRefreshToken'] = async function (
+  this: UserDocument,
+  candidate: string,
+): Promise<boolean> {
+  if (!this.refreshToken) return false;
+  return bcrypt.compare(candidate, this.refreshToken);
+};

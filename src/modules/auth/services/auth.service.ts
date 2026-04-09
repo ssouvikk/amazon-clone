@@ -1,5 +1,6 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { TOKENS } from '../../../shared/constants/tokens';
 import { IUserService } from '../../user/interfaces/user.service.interface';
 import { IAuthService } from '../interfaces/auth.service.interface';
@@ -14,14 +15,12 @@ export class AuthService implements IAuthService {
     @Inject(TOKENS.USER_SERVICE)
     private readonly userService: IUserService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async register(registerDto: RegisterDto): Promise<UserDocument> {
-    const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-    return await this.userService.createUser({
-      ...registerDto,
-      password: hashedPassword,
-    });
+    // Note: Password hashing is handled by the UserSchema pre-save hook
+    return await this.userService.createUser(registerDto);
   }
 
   async validateUser(loginDto: LoginDto): Promise<UserDocument> {
@@ -32,24 +31,43 @@ export class AuthService implements IAuthService {
     throw new UnauthorizedException('Invalid credentials');
   }
 
-  async login(user: UserDocument): Promise<unknown> {
-    const payload = { email: user.email, sub: user._id, role: user.role };
-    return Promise.resolve({
-      access_token: this.jwtService.sign(payload),
-      refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
+  async login(user: UserDocument): Promise<{ accessToken: string; refreshToken: string }> {
+    const userId = String(user._id);
+    const payload = {
+      email: user.email,
+      sub: userId,
+      role: user.role,
+    };
+
+    const accessToken = this.jwtService.sign(payload);
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('auth.jwtRefreshSecret'),
+      expiresIn: this.configService.get<string>('auth.jwtRefreshExpiresIn') as string,
     });
+
+    // Hash and store refresh token in DB
+    const saltRounds = this.configService.get<number>('auth.bcryptSaltRounds')!;
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, saltRounds);
+
+    await this.userService.updateUser(userId, {
+      refreshToken: hashedRefreshToken,
+    });
+
+    return { accessToken, refreshToken };
   }
 
-  async refreshToken(user: { userId: string; email: string; role: string }): Promise<unknown> {
+  async refreshToken(user: {
+    userId: string;
+    email: string;
+    role: string;
+  }): Promise<{ accessToken: string }> {
     const payload = { email: user.email, sub: user.userId, role: user.role };
-    return Promise.resolve({
-      access_token: this.jwtService.sign(payload),
-    });
+    const accessToken = this.jwtService.sign(payload);
+
+    return await Promise.resolve({ accessToken });
+  }
+
+  async logout(userId: string): Promise<void> {
+    await this.userService.updateUser(userId, { refreshToken: undefined });
   }
 }
