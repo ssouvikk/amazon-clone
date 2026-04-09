@@ -11,6 +11,7 @@ import { envValidationSchema } from './config/env.validation';
 import { AllExceptionsFilter } from './shared/filters/http-exception.filter';
 import { LoggingInterceptor } from './shared/interceptors/logging.interceptor';
 import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { UserModule } from './modules/user/user.module';
       }),
     }),
     UserModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
