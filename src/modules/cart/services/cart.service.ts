@@ -19,7 +19,11 @@ export class CartService {
     return cart;
   }
 
-  async addToCart(userId: string, productId: string, quantity: number): Promise<CartDocument> {
+  async addToCart(
+    userId: string,
+    productId: string,
+    quantity: number,
+  ): Promise<CartDocument> {
     const product = await this.productService.findProductById(productId);
     const cart = await this.getCart(userId);
 
@@ -45,7 +49,10 @@ export class CartService {
     }))!;
   }
 
-  async removeFromCart(userId: string, productId: string): Promise<CartDocument> {
+  async removeFromCart(
+    userId: string,
+    productId: string,
+  ): Promise<CartDocument> {
     const cart = await this.getCart(userId);
     cart.items = cart.items.filter(
       (item) => item.productId.toString() !== productId,

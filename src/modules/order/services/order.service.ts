@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { OrderRepository } from '../repositories/order.repository';
 import { CartService } from '../../cart/services/cart.service';
 import { ProductService } from '../../product/services/product.service';
@@ -42,8 +46,14 @@ export class OrderService {
     const updatedProducts = [];
     try {
       for (const item of cart.items) {
-        await this.productService.updateStock(item.productId.toString(), -item.quantity);
-        updatedProducts.push({ id: item.productId.toString(), qty: item.quantity });
+        await this.productService.updateStock(
+          item.productId.toString(),
+          -item.quantity,
+        );
+        updatedProducts.push({
+          id: item.productId.toString(),
+          qty: item.quantity,
+        });
       }
 
       // 3. Create Order
@@ -83,7 +93,10 @@ export class OrderService {
     return order;
   }
 
-  async updateOrderStatus(id: string, status: OrderStatus): Promise<OrderDocument> {
+  async updateOrderStatus(
+    id: string,
+    status: OrderStatus,
+  ): Promise<OrderDocument> {
     const order = await this.orderRepository.updateStatus(id, status);
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);

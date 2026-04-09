@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Patch,
-  Body,
-  UseGuards,
-  Req,
-} from '@nestjs/common';
+import { Controller, Get, Patch, Body, UseGuards, Req } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { JwtAuthGuard } from '../../../shared/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
@@ -35,7 +28,10 @@ export class UserController {
     @Req() req: any,
     @Body() updateData: any,
   ): Promise<ApiResponse<any>> {
-    const user = await this.userService.updateProfile(req.user.userId, updateData);
+    const user = await this.userService.updateProfile(
+      req.user.userId,
+      updateData,
+    );
     return {
       success: true,
       message: 'Profile updated successfully',

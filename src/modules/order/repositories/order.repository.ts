@@ -16,7 +16,10 @@ export class OrderRepository implements IOrderRepository {
   }
 
   async findById(id: string): Promise<OrderDocument | null> {
-    return await this.orderModel.findById(id).populate('items.productId').exec();
+    return await this.orderModel
+      .findById(id)
+      .populate('items.productId')
+      .exec();
   }
 
   async findByUserId(userId: string): Promise<OrderDocument[]> {
@@ -36,7 +39,10 @@ export class OrderRepository implements IOrderRepository {
       .exec();
   }
 
-  async updateStatus(id: string, status: OrderStatus): Promise<OrderDocument | null> {
+  async updateStatus(
+    id: string,
+    status: OrderStatus,
+  ): Promise<OrderDocument | null> {
     return await this.orderModel
       .findByIdAndUpdate(id, { status }, { new: true })
       .exec();

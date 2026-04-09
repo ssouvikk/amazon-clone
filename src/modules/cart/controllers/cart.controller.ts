@@ -75,7 +75,10 @@ export class CartController {
     @Req() req: any,
     @Param('productId') productId: string,
   ): Promise<ApiResponse<any>> {
-    const cart = await this.cartService.removeFromCart(req.user.userId, productId);
+    const cart = await this.cartService.removeFromCart(
+      req.user.userId,
+      productId,
+    );
     return {
       success: true,
       message: 'Item removed from cart successfully',

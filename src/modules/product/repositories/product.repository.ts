@@ -7,7 +7,8 @@ import { IProductRepository } from '../interfaces/product.repository.interface';
 @Injectable()
 export class ProductRepository implements IProductRepository {
   constructor(
-    @InjectModel(Product.name) private readonly productModel: Model<ProductDocument>,
+    @InjectModel(Product.name)
+    private readonly productModel: Model<ProductDocument>,
   ) {}
 
   async create(product: Partial<Product>): Promise<ProductDocument> {
@@ -29,7 +30,10 @@ export class ProductRepository implements IProductRepository {
       .exec();
   }
 
-  async update(id: string, product: Partial<Product>): Promise<ProductDocument | null> {
+  async update(
+    id: string,
+    product: Partial<Product>,
+  ): Promise<ProductDocument | null> {
     return await this.productModel
       .findByIdAndUpdate(id, product, { new: true })
       .exec();
@@ -44,7 +48,10 @@ export class ProductRepository implements IProductRepository {
     return await this.productModel.countDocuments(filters).exec();
   }
 
-  async updateStock(id: string, quantity: number): Promise<ProductDocument | null> {
+  async updateStock(
+    id: string,
+    quantity: number,
+  ): Promise<ProductDocument | null> {
     return await this.productModel
       .findByIdAndUpdate(
         id,

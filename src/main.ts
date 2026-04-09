@@ -8,6 +8,9 @@ import { ConfigService } from '@nestjs/config';
 import helmet from '@fastify/helmet';
 import compression from '@fastify/compress';
 import { AppModule } from './app.module';
+import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
+import { TransformInterceptor } from './shared/interceptors/transform.interceptor';
+import { LoggingInterceptor } from './shared/interceptors/logging.interceptor';
 
 async function bootstrap(): Promise<void> {
   const logger = new Logger('Bootstrap');
@@ -42,6 +45,15 @@ async function bootstrap(): Promise<void> {
         enableImplicitConversion: true,
       },
     }),
+  );
+
+  // Global Filters
+  app.useGlobalFilters(new GlobalExceptionFilter());
+
+  // Global Interceptors
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(),
+    new TransformInterceptor(),
   );
 
   await app.listen(port, '0.0.0.0');
