@@ -34,3 +34,10 @@ export const ProductSchema = SchemaFactory.createForClass(Product);
 
 // Full-text search index
 ProductSchema.index({ title: 'text', description: 'text' });
+
+// Stock validation hook
+ProductSchema.pre('save', function (this: ProductDocument) {
+  if (this.stock < 0) {
+    throw new Error('Stock cannot be negative');
+  }
+});

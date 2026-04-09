@@ -34,8 +34,9 @@ export class OrderService implements IOrderService {
       }
       orderItems.push({
         productId: item.productId,
+        titleSnapshot: product.title,
         quantity: item.quantity,
-        priceFixed: item.priceSnapshot,
+        priceSnapshot: item.priceSnapshot,
       });
     }
 

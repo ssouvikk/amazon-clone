@@ -41,6 +41,14 @@ This document outlines the MongoDB schema design, relationships, and indexing st
 
 ---
 
+## Mongoose Hooks
+
+- **User**: Pre-save hook for password hashing using `bcrypt`.
+- **Product**: Pre-save hook for stock validation (ensure non-negative).
+- **Order**: Pre-save hook for `totalAmount` validation (ensure non-negative).
+
+---
+
 ## Scalability Implications
 
 - **Read-Heavy vs Write-Heavy**: Product queries are optimized via indexes. Cart updates are atomic document-level operations.

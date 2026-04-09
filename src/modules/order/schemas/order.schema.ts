@@ -50,3 +50,10 @@ export class Order {
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);
+
+// Order totalAmount validation hook
+OrderSchema.pre('save', function (this: OrderDocument) {
+  if (this.totalAmount < 0) {
+    throw new Error('Total amount cannot be negative');
+  }
+});
