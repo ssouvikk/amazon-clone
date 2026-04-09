@@ -1,4 +1,5 @@
 import { IsString, IsNumber, IsInt, IsOptional, Min, IsUrl } from 'class-validator';
+import { PaginationQueryDto } from '../../../shared/dto/pagination.dto';
 
 export class CreateProductDto {
   @IsString()
@@ -49,4 +50,24 @@ export class UpdateProductDto {
   @IsUrl()
   @IsOptional()
   imageUrl?: string;
+}
+
+export class ProductQueryDto extends PaginationQueryDto {
+  @IsString()
+  @IsOptional()
+  search?: string;
+
+  @IsString()
+  @IsOptional()
+  category?: string;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  minPrice?: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  maxPrice?: number;
 }

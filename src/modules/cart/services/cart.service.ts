@@ -24,8 +24,10 @@ export class CartService implements ICartService {
   }
 
   async addToCart(userId: string, productId: string, quantity: number): Promise<CartDocument> {
-    const product = await this.productService.findProductById(productId);
-    const cart = await this.getCart(userId);
+    const [product, cart] = await Promise.all([
+      this.productService.findProductById(productId),
+      this.getCart(userId),
+    ]);
 
     const itemIndex = cart.items.findIndex((item) => item.productId.toString() === productId);
 

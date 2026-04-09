@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, SortOrder } from 'mongoose';
-import { Product, ProductDocument } from '../schemas/product.schema';
+import { ProductDocument } from '../schemas/product.schema';
 import { IProductRepository } from '../interfaces/product.repository.interface';
+import { CreateProductDto, UpdateProductDto, ProductQueryDto } from '../dto/product.dto';
 
 @Injectable()
 export class ProductRepository implements IProductRepository {
   constructor(
-    @InjectModel(Product.name)
+    @InjectModel('Product')
     private readonly productModel: Model<ProductDocument>,
   ) {}
 
-  async create(product: Partial<Product>): Promise<ProductDocument> {
+  async create(product: CreateProductDto): Promise<ProductDocument> {
     const newProduct = new this.productModel(product);
     return newProduct.save();
   }
@@ -23,25 +24,29 @@ export class ProductRepository implements IProductRepository {
       .exec() as Promise<ProductDocument | null>;
   }
 
-  async findAll(query: Record<string, unknown>): Promise<ProductDocument[]> {
-    const { skip = 0, limit = 10, search, category, ...filters } = query;
+  async findAll(query: ProductQueryDto): Promise<ProductDocument[]> {
+    const { skip = 0, limit = 10, search, category, minPrice, maxPrice } = query;
 
     const queryBuilder: Record<string, unknown> = {
-      ...filters,
       isDeleted: false,
     };
 
-    if (typeof search === 'string') {
+    if (search) {
       queryBuilder['$text'] = { $search: search };
     }
 
-    if (typeof category === 'string') {
+    if (category) {
       queryBuilder['category'] = category;
     }
 
-    // Using Parameters helper to get the correct type from Model.find
-    type FilterType = Parameters<Model<ProductDocument>['find']>[0];
-    const findQuery = this.productModel.find(queryBuilder as unknown as FilterType);
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      const priceQuery: Record<string, number> = {};
+      if (minPrice !== undefined) priceQuery['$gte'] = minPrice;
+      if (maxPrice !== undefined) priceQuery['$lte'] = maxPrice;
+      queryBuilder['price'] = priceQuery;
+    }
+
+    const findQuery = this.productModel.find(queryBuilder);
 
     // Apply projection: exclude heavy fields for list view
     findQuery.select('-description -specifications -reviews');
@@ -60,7 +65,7 @@ export class ProductRepository implements IProductRepository {
     >;
   }
 
-  async update(id: string, product: Partial<Product>): Promise<ProductDocument | null> {
+  async update(id: string, product: UpdateProductDto): Promise<ProductDocument | null> {
     return this.productModel
       .findOneAndUpdate({ _id: id, isDeleted: false }, product, { new: true })
       .lean()
@@ -73,23 +78,28 @@ export class ProductRepository implements IProductRepository {
       .exec();
   }
 
-  async count(query: Record<string, unknown>): Promise<number> {
-    const { search, category, ...filters } = query;
+  async count(query: ProductQueryDto): Promise<number> {
+    const { search, category, minPrice, maxPrice } = query;
     const queryBuilder: Record<string, unknown> = {
-      ...filters,
       isDeleted: false,
     };
 
-    if (typeof search === 'string') {
+    if (search) {
       queryBuilder['$text'] = { $search: search };
     }
 
-    if (typeof category === 'string') {
+    if (category) {
       queryBuilder['category'] = category;
     }
 
-    type CountFilterType = Parameters<Model<ProductDocument>['countDocuments']>[0];
-    return this.productModel.countDocuments(queryBuilder as unknown as CountFilterType).exec();
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      const priceQuery: Record<string, number> = {};
+      if (minPrice !== undefined) priceQuery['$gte'] = minPrice;
+      if (maxPrice !== undefined) priceQuery['$lte'] = maxPrice;
+      queryBuilder['price'] = priceQuery;
+    }
+
+    return this.productModel.countDocuments(queryBuilder).exec();
   }
 
   async updateStock(id: string, quantity: number): Promise<ProductDocument | null> {

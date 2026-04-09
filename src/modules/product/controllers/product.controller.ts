@@ -13,12 +13,12 @@ import {
 } from '@nestjs/common';
 import { TOKENS } from '../../../shared/constants/tokens';
 import { IProductService } from '../interfaces/product.service.interface';
-import { Product } from '../schemas/product.schema';
 import { JwtAuthGuard } from '../../../shared/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
 import { Roles } from '../../../shared/decorators/roles.decorator';
 import { UserRole } from '../../user/schemas/user.schema';
 import { ApiResponse } from '../../../shared/interfaces/api-response.interface';
+import { CreateProductDto, UpdateProductDto, ProductQueryDto } from '../dto/product.dto';
 
 @Controller('products')
 export class ProductController {
@@ -28,12 +28,17 @@ export class ProductController {
   ) {}
 
   @Get()
-  async getProducts(@Query() query: Record<string, unknown>): Promise<ApiResponse<unknown>> {
+  async getProducts(@Query() query: ProductQueryDto): Promise<ApiResponse<unknown>> {
     const { items, total } = await this.productService.findAllProducts(query);
     return {
       success: true,
       message: 'Products retrieved successfully',
-      data: { items, total },
+      data: {
+        items,
+        total,
+        page: Math.floor((query.skip || 0) / (query.limit || 10)) + 1,
+        limit: query.limit || 10,
+      },
       statusCode: HttpStatus.OK,
       timestamp: new Date().toISOString(),
     };
@@ -54,7 +59,7 @@ export class ProductController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  async createProduct(@Body() productData: Partial<Product>): Promise<ApiResponse<unknown>> {
+  async createProduct(@Body() productData: CreateProductDto): Promise<ApiResponse<unknown>> {
     const product = await this.productService.createProduct(productData);
     return {
       success: true,
@@ -70,7 +75,7 @@ export class ProductController {
   @Roles(UserRole.ADMIN)
   async updateProduct(
     @Param('id') id: string,
-    @Body() updateData: Partial<Product>,
+    @Body() updateData: UpdateProductDto,
   ): Promise<ApiResponse<unknown>> {
     const product = await this.productService.updateProduct(id, updateData);
     return {

@@ -3,7 +3,8 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { TOKENS } from '../../../shared/constants/tokens';
 import { IProductRepository } from '../interfaces/product.repository.interface';
-import { Product, ProductDocument } from '../schemas/product.schema';
+import { ProductDocument } from '../schemas/product.schema';
+import { CreateProductDto, UpdateProductDto, ProductQueryDto } from '../dto/product.dto';
 
 @Injectable()
 export class ProductService {
@@ -19,7 +20,7 @@ export class ProductService {
     return `products:item:${id}`;
   }
 
-  async createProduct(productData: Partial<Product>): Promise<ProductDocument> {
+  async createProduct(productData: CreateProductDto): Promise<ProductDocument> {
     const product = await this.productRepository.create(productData);
     await this.invalidateListCache();
     return product;
@@ -39,7 +40,7 @@ export class ProductService {
   }
 
   async findAllProducts(
-    query: Record<string, unknown>,
+    query: ProductQueryDto,
   ): Promise<{ items: ProductDocument[]; total: number }> {
     const cacheKey = `${this.LIST_CACHE_KEY}:${JSON.stringify(query)}`;
     const cached = await this.cacheManager.get<{ items: ProductDocument[]; total: number }>(
@@ -52,11 +53,11 @@ export class ProductService {
       this.productRepository.count(query),
     ]);
     const result = { items, total };
-    await this.cacheManager.set(cacheKey, result);
+    await this.cacheManager.set(cacheKey, result, 60000); // 60s
     return result;
   }
 
-  async updateProduct(id: string, updateData: Partial<Product>): Promise<ProductDocument> {
+  async updateProduct(id: string, updateData: UpdateProductDto): Promise<ProductDocument> {
     const product = await this.productRepository.update(id, updateData);
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
