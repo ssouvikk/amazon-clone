@@ -41,7 +41,8 @@ export class AuthService implements IAuthService {
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('auth.jwtRefreshSecret'),
-      expiresIn: this.configService.get<string>('auth.jwtRefreshExpiresIn') as string,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+      expiresIn: this.configService.get<string>('auth.jwtRefreshExpiresIn') as any,
     });
 
     // Save refresh token - Note: UserSchema pre-save hook handles hashing
