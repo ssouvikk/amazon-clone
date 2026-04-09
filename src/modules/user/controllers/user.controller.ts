@@ -1,5 +1,6 @@
-import { Controller, Get, Patch, Body, UseGuards, Req } from '@nestjs/common';
-import { UserService } from '../services/user.service';
+import { Controller, Get, Patch, Body, UseGuards, Req, Inject } from '@nestjs/common';
+import { TOKENS } from '../../../shared/constants/tokens';
+import { IUserService } from '../interfaces/user.service.interface';
 import { JwtAuthGuard } from '../../../shared/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
 import { Roles } from '../../../shared/decorators/roles.decorator';
@@ -9,11 +10,14 @@ import { ApiResponse } from '../../../shared/interfaces/api-response.interface';
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    @Inject(TOKENS.USER_SERVICE)
+    private readonly userService: IUserService,
+  ) {}
 
   @Get('profile')
   async getProfile(@Req() req: { user: { userId: string } }): Promise<ApiResponse<unknown>> {
-    const user = await this.userService.findById(req.user.userId);
+    const user = await this.userService.getUserById(req.user.userId);
     return {
       success: true,
       message: 'Profile retrieved successfully',
@@ -28,7 +32,7 @@ export class UserController {
     @Req() req: { user: { userId: string } },
     @Body() updateData: Record<string, unknown>,
   ): Promise<ApiResponse<unknown>> {
-    const user = await this.userService.updateProfile(req.user.userId, updateData);
+    const user = await this.userService.updateUser(req.user.userId, updateData);
     return {
       success: true,
       message: 'Profile updated successfully',
@@ -41,7 +45,7 @@ export class UserController {
   @Get()
   @Roles(UserRole.ADMIN)
   async getAllUsers(): Promise<ApiResponse<unknown>> {
-    const users = await this.userService.findAllUsers();
+    const users = await this.userService.getAllUsers();
     return {
       success: true,
       message: 'Users retrieved successfully',

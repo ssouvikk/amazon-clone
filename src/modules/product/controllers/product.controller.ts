@@ -9,8 +9,10 @@ import {
   Query,
   UseGuards,
   HttpStatus,
+  Inject,
 } from '@nestjs/common';
-import { ProductService } from '../services/product.service';
+import { TOKENS } from '../../../shared/constants/tokens';
+import { IProductService } from '../interfaces/product.service.interface';
 import { Product } from '../schemas/product.schema';
 import { JwtAuthGuard } from '../../../shared/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
@@ -20,7 +22,10 @@ import { ApiResponse } from '../../../shared/interfaces/api-response.interface';
 
 @Controller('products')
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    @Inject(TOKENS.PRODUCT_SERVICE)
+    private readonly productService: IProductService,
+  ) {}
 
   @Get()
   async getProducts(@Query() query: Record<string, unknown>): Promise<ApiResponse<unknown>> {

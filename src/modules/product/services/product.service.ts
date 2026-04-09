@@ -1,10 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { ProductRepository } from '../repositories/product.repository';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { TOKENS } from '../../../shared/constants/tokens';
+import { IProductRepository } from '../interfaces/product.repository.interface';
 import { Product, ProductDocument } from '../schemas/product.schema';
 
 @Injectable()
 export class ProductService {
-  constructor(private readonly productRepository: ProductRepository) {}
+  constructor(
+    @Inject(TOKENS.PRODUCT_REPOSITORY)
+    private readonly productRepository: IProductRepository,
+  ) {}
 
   async createProduct(productData: Partial<Product>): Promise<ProductDocument> {
     return await this.productRepository.create(productData);
