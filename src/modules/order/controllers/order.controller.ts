@@ -1,0 +1,89 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Param,
+  Body,
+  UseGuards,
+  Req,
+  HttpStatus,
+} from '@nestjs/common';
+import { OrderService } from '../services/order.service';
+import { JwtAuthGuard } from '../../../shared/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../shared/guards/roles.guard';
+import { Roles } from '../../../shared/decorators/roles.decorator';
+import { UserRole } from '../../user/schemas/user.schema';
+import { OrderStatus } from '../schemas/order.schema';
+import { ApiResponse } from '../../../shared/interfaces/api-response.interface';
+
+@Controller('orders')
+@UseGuards(JwtAuthGuard, RolesGuard)
+export class OrderController {
+  constructor(private readonly orderService: OrderService) {}
+
+  @Post('checkout')
+  async checkout(@Req() req: any): Promise<ApiResponse<any>> {
+    const order = await this.orderService.createOrderFromCart(req.user.userId);
+    return {
+      success: true,
+      message: 'Order placed successfully',
+      data: order,
+      statusCode: HttpStatus.CREATED,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get('my-orders')
+  async getMyOrders(@Req() req: any): Promise<ApiResponse<any>> {
+    const orders = await this.orderService.getUserOrders(req.user.userId);
+    return {
+      success: true,
+      message: 'Orders retrieved successfully',
+      data: orders,
+      statusCode: HttpStatus.OK,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get()
+  @Roles(UserRole.ADMIN)
+  async getAllOrders(): Promise<ApiResponse<any>> {
+    const orders = await this.orderService.getAllOrders();
+    return {
+      success: true,
+      message: 'All orders retrieved successfully',
+      data: orders,
+      statusCode: HttpStatus.OK,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get(':id')
+  async getOrderById(@Param('id') id: string): Promise<ApiResponse<any>> {
+    const order = await this.orderService.getOrderById(id);
+    return {
+      success: true,
+      message: 'Order retrieved successfully',
+      data: order,
+      statusCode: HttpStatus.OK,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Patch(':id/status')
+  @Roles(UserRole.ADMIN)
+  async updateStatus(
+    @Param('id') id: string,
+    @Body('status') status: OrderStatus,
+  ): Promise<ApiResponse<any>> {
+    const order = await this.orderService.updateOrderStatus(id, status);
+    return {
+      success: true,
+      message: 'Order status updated successfully',
+      data: order,
+      statusCode: HttpStatus.OK,
+      timestamp: new Date().toISOString(),
+    };
+  }
+}
