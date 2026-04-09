@@ -19,9 +19,11 @@ This document outlines the MongoDB schema design, relationships, and indexing st
 
 ### Product
 - **Schema**: Catalog information including price, stock, and images.
+- **Fields**: `title`, `description`, `price`, `stock`, `category`, `images`, `isDeleted`, `deletedAt`.
 - **Indexes**: 
   - Text index on `title` and `description` for full-text search.
   - Index on `category` for fast filtering.
+- **Soft Delete**: Implemented with `isDeleted` flag and `deletedAt` timestamp.
 
 ### Cart
 - **Schema**: User-specific shopping cart.

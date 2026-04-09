@@ -17,14 +17,20 @@ export class Product {
   @Prop({ required: true, min: 0 })
   stock!: number;
 
-  @Prop({ required: true, trim: true })
+  @Prop({ required: true, trim: true, index: true })
   category!: string;
 
   @Prop({ type: [String], default: [] })
   images!: string[];
 
-  @Prop({ default: true })
-  isActive!: boolean;
+  @Prop({ default: false })
+  isDeleted!: boolean;
+
+  @Prop()
+  deletedAt?: Date;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);
+
+// Full-text search index
+ProductSchema.index({ title: 'text', description: 'text' });

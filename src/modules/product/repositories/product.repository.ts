@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, SortOrder } from 'mongoose';
 import { Product, ProductDocument } from '../schemas/product.schema';
 import { IProductRepository } from '../interfaces/product.repository.interface';
 
@@ -13,45 +13,83 @@ export class ProductRepository implements IProductRepository {
 
   async create(product: Partial<Product>): Promise<ProductDocument> {
     const newProduct = new this.productModel(product);
-    return await newProduct.save();
+    return newProduct.save();
   }
 
   async findById(id: string): Promise<ProductDocument | null> {
-    return await this.productModel.findById(id).exec();
+    return this.productModel.findOne({ _id: id, isDeleted: false }).exec();
   }
 
   async findAll(query: Record<string, unknown>): Promise<ProductDocument[]> {
-    const skip = query['skip'] ?? 0;
-    const limit = query['limit'] ?? 10;
-    const filters = { ...query };
-    delete filters['skip'];
-    delete filters['limit'];
-    return await this.productModel
-      .find(filters)
-      .skip(Number(skip))
-      .limit(Number(limit))
-      .sort({ createdAt: -1 })
-      .exec();
+    const { skip = 0, limit = 10, search, category, ...filters } = query;
+
+    const queryBuilder: Record<string, unknown> = {
+      ...filters,
+      isDeleted: false,
+    };
+
+    if (typeof search === 'string') {
+      queryBuilder['$text'] = { $search: search };
+    }
+
+    if (typeof category === 'string') {
+      queryBuilder['category'] = category;
+    }
+
+    // Using Parameters helper to get the correct type from Model.find
+    type FilterType = Parameters<Model<ProductDocument>['find']>[0];
+    const findQuery = this.productModel.find(queryBuilder as unknown as FilterType);
+
+    if (search) {
+      findQuery.select({ score: { $meta: 'textScore' } });
+      findQuery.sort({ score: { $meta: 'textScore' } } as unknown as
+        | string
+        | Record<string, SortOrder>);
+    } else {
+      findQuery.sort({ createdAt: -1 } as unknown as string | Record<string, SortOrder>);
+    }
+
+    return findQuery.skip(Number(skip)).limit(Number(limit)).exec();
   }
 
   async update(id: string, product: Partial<Product>): Promise<ProductDocument | null> {
-    return await this.productModel.findByIdAndUpdate(id, product, { new: true }).exec();
+    return this.productModel
+      .findOneAndUpdate({ _id: id, isDeleted: false }, product, { new: true })
+      .exec();
   }
 
   async delete(id: string): Promise<void> {
-    await this.productModel.findByIdAndDelete(id).exec();
+    await this.productModel
+      .findOneAndUpdate({ _id: id, isDeleted: false }, { isDeleted: true, deletedAt: new Date() })
+      .exec();
   }
 
   async count(query: Record<string, unknown>): Promise<number> {
-    const filters = { ...query };
-    delete filters['skip'];
-    delete filters['limit'];
-    return await this.productModel.countDocuments(filters).exec();
+    const { search, category, ...filters } = query;
+    const queryBuilder: Record<string, unknown> = {
+      ...filters,
+      isDeleted: false,
+    };
+
+    if (typeof search === 'string') {
+      queryBuilder['$text'] = { $search: search };
+    }
+
+    if (typeof category === 'string') {
+      queryBuilder['category'] = category;
+    }
+
+    type CountFilterType = Parameters<Model<ProductDocument>['countDocuments']>[0];
+    return this.productModel.countDocuments(queryBuilder as unknown as CountFilterType).exec();
   }
 
   async updateStock(id: string, quantity: number): Promise<ProductDocument | null> {
-    return await this.productModel
-      .findByIdAndUpdate(id, { $inc: { stock: quantity } }, { new: true, runValidators: true })
+    return this.productModel
+      .findOneAndUpdate(
+        { _id: id, isDeleted: false },
+        { $inc: { stock: quantity } },
+        { new: true, runValidators: true },
+      )
       .exec();
   }
 }
