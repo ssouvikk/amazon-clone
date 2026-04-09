@@ -4,6 +4,7 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import helmet from '@fastify/helmet';
 import compression from '@fastify/compress';
+import cookie from '@fastify/cookie';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 import { TransformInterceptor } from './shared/interceptors/transform.interceptor';
@@ -28,6 +29,11 @@ async function bootstrap(): Promise<void> {
 
   // Compression
   await app.register(compression);
+
+  // Cookies
+  await app.register(cookie, {
+    secret: configService.get<string>('auth.cookieSecret'),
+  });
 
   // Global Prefix
   app.setGlobalPrefix(apiPrefix);
