@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CacheModule } from '@nestjs/cache-manager';
 import { DatabaseModule } from './database/database.module';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
@@ -30,6 +31,15 @@ import { SharedModule } from './shared/shared.module';
       },
     }),
     DatabaseModule,
+    CacheModule.registerAsync({
+      isGlobal: true,
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        ttl: configService.get<number>('cache.ttl') || 60000, // default 60s
+        max: configService.get<number>('cache.max') || 100, // default 100 items
+      }),
+      inject: [ConfigService],
+    }),
     UserModule,
     AuthModule,
     ProductModule,
