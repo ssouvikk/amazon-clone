@@ -10,6 +10,7 @@ import { GlobalExceptionFilter } from './shared/filters/global-exception.filter'
 import { TransformInterceptor } from './shared/interceptors/transform.interceptor';
 import { LoggingInterceptor } from './shared/interceptors/logging.interceptor';
 import { UserContextInterceptor } from './shared/interceptors/user-context.interceptor';
+import { setupSwagger } from './config/swagger.config';
 
 async function bootstrap(): Promise<void> {
   const logger = new Logger('Bootstrap');
@@ -43,6 +44,11 @@ async function bootstrap(): Promise<void> {
 
   // Global Prefix
   app.setGlobalPrefix(apiPrefix);
+
+  // Swagger Documentation
+  if (configService.get<string>('app.nodeEnv') !== 'production') {
+    setupSwagger(app);
+  }
 
   // Global Validation Pipe
   app.useGlobalPipes(
