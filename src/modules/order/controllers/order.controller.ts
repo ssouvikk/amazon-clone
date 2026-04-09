@@ -23,7 +23,7 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post('checkout')
-  async checkout(@Req() req: any): Promise<ApiResponse<any>> {
+  async checkout(@Req() req: { user: { userId: string } }): Promise<ApiResponse<unknown>> {
     const order = await this.orderService.createOrderFromCart(req.user.userId);
     return {
       success: true,
@@ -35,7 +35,7 @@ export class OrderController {
   }
 
   @Get('my-orders')
-  async getMyOrders(@Req() req: any): Promise<ApiResponse<any>> {
+  async getMyOrders(@Req() req: { user: { userId: string } }): Promise<ApiResponse<unknown>> {
     const orders = await this.orderService.getUserOrders(req.user.userId);
     return {
       success: true,
@@ -48,7 +48,7 @@ export class OrderController {
 
   @Get()
   @Roles(UserRole.ADMIN)
-  async getAllOrders(): Promise<ApiResponse<any>> {
+  async getAllOrders(): Promise<ApiResponse<unknown>> {
     const orders = await this.orderService.getAllOrders();
     return {
       success: true,
@@ -60,7 +60,7 @@ export class OrderController {
   }
 
   @Get(':id')
-  async getOrderById(@Param('id') id: string): Promise<ApiResponse<any>> {
+  async getOrderById(@Param('id') id: string): Promise<ApiResponse<unknown>> {
     const order = await this.orderService.getOrderById(id);
     return {
       success: true,
@@ -76,7 +76,7 @@ export class OrderController {
   async updateStatus(
     @Param('id') id: string,
     @Body('status') status: OrderStatus,
-  ): Promise<ApiResponse<any>> {
+  ): Promise<ApiResponse<unknown>> {
     const order = await this.orderService.updateOrderStatus(id, status);
     return {
       success: true,

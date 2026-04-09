@@ -11,6 +11,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ProductService } from '../services/product.service';
+import { Product } from '../schemas/product.schema';
 import { JwtAuthGuard } from '../../../shared/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
 import { Roles } from '../../../shared/decorators/roles.decorator';
@@ -22,7 +23,7 @@ export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Get()
-  async getProducts(@Query() query: any): Promise<ApiResponse<any>> {
+  async getProducts(@Query() query: Record<string, unknown>): Promise<ApiResponse<unknown>> {
     const { items, total } = await this.productService.findAllProducts(query);
     return {
       success: true,
@@ -34,7 +35,7 @@ export class ProductController {
   }
 
   @Get(':id')
-  async getProduct(@Param('id') id: string): Promise<ApiResponse<any>> {
+  async getProduct(@Param('id') id: string): Promise<ApiResponse<unknown>> {
     const product = await this.productService.findProductById(id);
     return {
       success: true,
@@ -48,7 +49,7 @@ export class ProductController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  async createProduct(@Body() productData: any): Promise<ApiResponse<any>> {
+  async createProduct(@Body() productData: Partial<Product>): Promise<ApiResponse<unknown>> {
     const product = await this.productService.createProduct(productData);
     return {
       success: true,
@@ -64,8 +65,8 @@ export class ProductController {
   @Roles(UserRole.ADMIN)
   async updateProduct(
     @Param('id') id: string,
-    @Body() updateData: any,
-  ): Promise<ApiResponse<any>> {
+    @Body() updateData: Partial<Product>,
+  ): Promise<ApiResponse<unknown>> {
     const product = await this.productService.updateProduct(id, updateData);
     return {
       success: true,
@@ -79,7 +80,7 @@ export class ProductController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  async deleteProduct(@Param('id') id: string): Promise<ApiResponse<any>> {
+  async deleteProduct(@Param('id') id: string): Promise<ApiResponse<unknown>> {
     await this.productService.deleteProduct(id);
     return {
       success: true,

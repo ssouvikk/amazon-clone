@@ -6,9 +6,7 @@ import { IUserRepository } from '../interfaces/user.repository.interface';
 
 @Injectable()
 export class UserRepository implements IUserRepository {
-  constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-  ) {}
+  constructor(@InjectModel(User.name) private readonly userModel: Model<UserDocument>) {}
 
   async create(user: Partial<User>): Promise<UserDocument> {
     const newUser = new this.userModel(user);
@@ -28,9 +26,7 @@ export class UserRepository implements IUserRepository {
   }
 
   async update(id: string, user: Partial<User>): Promise<UserDocument | null> {
-    return await this.userModel
-      .findByIdAndUpdate(id, user, { new: true })
-      .exec();
+    return await this.userModel.findByIdAndUpdate(id, user, { new: true }).exec();
   }
 
   async delete(id: string): Promise<void> {

@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { UserRepository } from '../repositories/user.repository';
 import { User, UserDocument } from '../schemas/user.schema';
 
@@ -34,10 +30,7 @@ export class UserService {
     return await this.userRepository.findAll();
   }
 
-  async updateProfile(
-    id: string,
-    updateData: Partial<User>,
-  ): Promise<UserDocument> {
+  async updateProfile(id: string, updateData: Partial<User>): Promise<UserDocument> {
     // Prevent role escalation via normal update
     delete updateData.role;
     const user = await this.userRepository.update(id, updateData);

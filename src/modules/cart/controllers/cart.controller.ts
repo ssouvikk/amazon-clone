@@ -20,7 +20,19 @@ export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   @Get()
-  async getCart(@Req() req: any): Promise<ApiResponse<any>> {
+  async getCart(@Req() req: { user: { userId: string } }): Promise<ApiResponse<unknown>> {
+    const cart = await this.cartService.getCart(req.user.userId);
+    return {
+      success: true,
+      message: 'Cart retrieved successfully',
+      data: cart,
+      statusCode: HttpStatus.OK,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get('my-orders')
+  async getMyOrders(@Req() req: { user: { userId: string } }): Promise<ApiResponse<unknown>> {
     const cart = await this.cartService.getCart(req.user.userId);
     return {
       success: true,
@@ -33,14 +45,10 @@ export class CartController {
 
   @Post('items')
   async addToCart(
-    @Req() req: any,
+    @Req() req: { user: { userId: string } },
     @Body() body: { productId: string; quantity: number },
-  ): Promise<ApiResponse<any>> {
-    const cart = await this.cartService.addToCart(
-      req.user.userId,
-      body.productId,
-      body.quantity,
-    );
+  ): Promise<ApiResponse<unknown>> {
+    const cart = await this.cartService.addToCart(req.user.userId, body.productId, body.quantity);
     return {
       success: true,
       message: 'Item added to cart successfully',
@@ -52,15 +60,11 @@ export class CartController {
 
   @Patch('items/:productId')
   async updateQuantity(
-    @Req() req: any,
+    @Req() req: { user: { userId: string } },
     @Param('productId') productId: string,
     @Body('quantity') quantity: number,
-  ): Promise<ApiResponse<any>> {
-    const cart = await this.cartService.updateQuantity(
-      req.user.userId,
-      productId,
-      quantity,
-    );
+  ): Promise<ApiResponse<unknown>> {
+    const cart = await this.cartService.updateQuantity(req.user.userId, productId, quantity);
     return {
       success: true,
       message: 'Cart item quantity updated successfully',
@@ -72,13 +76,10 @@ export class CartController {
 
   @Delete('items/:productId')
   async removeFromCart(
-    @Req() req: any,
+    @Req() req: { user: { userId: string } },
     @Param('productId') productId: string,
-  ): Promise<ApiResponse<any>> {
-    const cart = await this.cartService.removeFromCart(
-      req.user.userId,
-      productId,
-    );
+  ): Promise<ApiResponse<unknown>> {
+    const cart = await this.cartService.removeFromCart(req.user.userId, productId);
     return {
       success: true,
       message: 'Item removed from cart successfully',
@@ -89,7 +90,7 @@ export class CartController {
   }
 
   @Delete()
-  async clearCart(@Req() req: any): Promise<ApiResponse<any>> {
+  async clearCart(@Req() req: { user: { userId: string } }): Promise<ApiResponse<unknown>> {
     await this.cartService.clearCart(req.user.userId);
     return {
       success: true,

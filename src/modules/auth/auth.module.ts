@@ -16,7 +16,8 @@ import { UserModule } from '../user/user.module';
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('auth.jwtSecret')!,
         signOptions: {
-          expiresIn: configService.get<any>('auth.jwtExpiresIn')!,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+          expiresIn: configService.get<string>('auth.jwtExpiresIn') as any,
         },
       }),
     }),

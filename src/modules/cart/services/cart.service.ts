@@ -19,24 +19,18 @@ export class CartService {
     return cart;
   }
 
-  async addToCart(
-    userId: string,
-    productId: string,
-    quantity: number,
-  ): Promise<CartDocument> {
+  async addToCart(userId: string, productId: string, quantity: number): Promise<CartDocument> {
     const product = await this.productService.findProductById(productId);
     const cart = await this.getCart(userId);
 
-    const itemIndex = cart.items.findIndex(
-      (item) => item.productId.toString() === productId,
-    );
+    const itemIndex = cart.items.findIndex((item) => item.productId.toString() === productId);
 
     if (itemIndex > -1) {
       cart.items[itemIndex].quantity += quantity;
       cart.items[itemIndex].priceSnapshot = product.price;
     } else {
       cart.items.push({
-        productId: new Types.ObjectId(productId) as any,
+        productId: new Types.ObjectId(productId),
         quantity,
         priceSnapshot: product.price,
       });
@@ -49,14 +43,9 @@ export class CartService {
     }))!;
   }
 
-  async removeFromCart(
-    userId: string,
-    productId: string,
-  ): Promise<CartDocument> {
+  async removeFromCart(userId: string, productId: string): Promise<CartDocument> {
     const cart = await this.getCart(userId);
-    cart.items = cart.items.filter(
-      (item) => item.productId.toString() !== productId,
-    );
+    cart.items = cart.items.filter((item) => item.productId.toString() !== productId);
     this.calculateTotal(cart);
     return (await this.cartRepository.update(userId, {
       items: cart.items,
@@ -64,15 +53,9 @@ export class CartService {
     }))!;
   }
 
-  async updateQuantity(
-    userId: string,
-    productId: string,
-    quantity: number,
-  ): Promise<CartDocument> {
+  async updateQuantity(userId: string, productId: string, quantity: number): Promise<CartDocument> {
     const cart = await this.getCart(userId);
-    const itemIndex = cart.items.findIndex(
-      (item) => item.productId.toString() === productId,
-    );
+    const itemIndex = cart.items.findIndex((item) => item.productId.toString() === productId);
 
     if (itemIndex > -1) {
       cart.items[itemIndex].quantity = quantity;

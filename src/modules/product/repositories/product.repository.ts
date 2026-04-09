@@ -20,44 +20,38 @@ export class ProductRepository implements IProductRepository {
     return await this.productModel.findById(id).exec();
   }
 
-  async findAll(query: any): Promise<ProductDocument[]> {
-    const { skip = 0, limit = 10, ...filters } = query;
+  async findAll(query: Record<string, unknown>): Promise<ProductDocument[]> {
+    const skip = query['skip'] ?? 0;
+    const limit = query['limit'] ?? 10;
+    const filters = { ...query };
+    delete filters['skip'];
+    delete filters['limit'];
     return await this.productModel
       .find(filters)
-      .skip(skip)
-      .limit(limit)
+      .skip(Number(skip))
+      .limit(Number(limit))
       .sort({ createdAt: -1 })
       .exec();
   }
 
-  async update(
-    id: string,
-    product: Partial<Product>,
-  ): Promise<ProductDocument | null> {
-    return await this.productModel
-      .findByIdAndUpdate(id, product, { new: true })
-      .exec();
+  async update(id: string, product: Partial<Product>): Promise<ProductDocument | null> {
+    return await this.productModel.findByIdAndUpdate(id, product, { new: true }).exec();
   }
 
   async delete(id: string): Promise<void> {
     await this.productModel.findByIdAndDelete(id).exec();
   }
 
-  async count(query: any): Promise<number> {
-    const { skip, limit, ...filters } = query;
+  async count(query: Record<string, unknown>): Promise<number> {
+    const filters = { ...query };
+    delete filters['skip'];
+    delete filters['limit'];
     return await this.productModel.countDocuments(filters).exec();
   }
 
-  async updateStock(
-    id: string,
-    quantity: number,
-  ): Promise<ProductDocument | null> {
+  async updateStock(id: string, quantity: number): Promise<ProductDocument | null> {
     return await this.productModel
-      .findByIdAndUpdate(
-        id,
-        { $inc: { stock: quantity } },
-        { new: true, runValidators: true },
-      )
+      .findByIdAndUpdate(id, { $inc: { stock: quantity } }, { new: true, runValidators: true })
       .exec();
   }
 }

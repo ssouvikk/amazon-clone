@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  UseGuards,
-  Req,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
@@ -18,7 +10,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  async register(@Body() registerDto: RegisterDto): Promise<ApiResponse<any>> {
+  async register(@Body() registerDto: RegisterDto): Promise<ApiResponse<unknown>> {
     const user = await this.authService.register(registerDto);
     return {
       success: true,
@@ -31,7 +23,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() loginDto: LoginDto): Promise<ApiResponse<any>> {
+  async login(@Body() loginDto: LoginDto): Promise<ApiResponse<unknown>> {
     const user = await this.authService.validateUser(loginDto);
     const tokens = await this.authService.login(user);
     return {
@@ -46,7 +38,9 @@ export class AuthController {
   @Post('refresh')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async refresh(@Req() req: any): Promise<ApiResponse<any>> {
+  async refresh(
+    @Req() req: { user: { email: string; userId: string; role: string } },
+  ): Promise<ApiResponse<unknown>> {
     const tokens = await this.authService.refreshToken(req.user);
     return {
       success: true,

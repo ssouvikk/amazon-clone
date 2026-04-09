@@ -29,9 +29,9 @@ export class AuthService {
     throw new UnauthorizedException('Invalid credentials');
   }
 
-  async login(user: UserDocument) {
+  async login(user: UserDocument): Promise<unknown> {
     const payload = { email: user.email, sub: user._id, role: user.role };
-    return {
+    return Promise.resolve({
       access_token: this.jwtService.sign(payload),
       refresh_token: this.jwtService.sign(payload, { expiresIn: '7d' }),
       user: {
@@ -40,13 +40,13 @@ export class AuthService {
         name: user.name,
         role: user.role,
       },
-    };
+    });
   }
 
-  async refreshToken(user: any) {
+  async refreshToken(user: { userId: string; email: string; role: string }): Promise<unknown> {
     const payload = { email: user.email, sub: user.userId, role: user.role };
-    return {
+    return Promise.resolve({
       access_token: this.jwtService.sign(payload),
-    };
+    });
   }
 }

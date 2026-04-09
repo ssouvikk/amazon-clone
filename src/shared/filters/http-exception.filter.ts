@@ -18,23 +18,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest<FastifyRequest>();
 
     const status =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+      exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
 
     const res =
-      exception instanceof HttpException
-        ? exception.getResponse()
-        : 'Internal server error';
+      exception instanceof HttpException ? exception.getResponse() : 'Internal server error';
 
     const message =
-      typeof res === 'string'
-        ? res
-        : (res as Record<string, unknown>)['message'] || res;
+      typeof res === 'string' ? res : (res as Record<string, unknown>)['message'] || res;
 
-    this.logger.error(
-      `Http Status: ${status} Error: ${JSON.stringify(message)}`,
-    );
+    this.logger.error(`Http Status: ${status} Error: ${JSON.stringify(message)}`);
 
     void response.status(status).send({
       statusCode: status,

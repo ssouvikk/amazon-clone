@@ -9,7 +9,9 @@ export default tseslint.config(
     ignores: ['eslint.config.mjs', 'dist/', 'node_modules/', 'coverage/'],
   },
   eslint.configs.recommended,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   ...tseslint.configs.recommendedTypeChecked,
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   eslintPluginPrettierRecommended,
   {
     languageOptions: {
@@ -34,6 +36,9 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-unsafe-argument': 'error',
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-unsafe-member-access': 'error',
+      '@typescript-eslint/no-unsafe-call': 'error',
       'prettier/prettier': 'error',
     },
   },

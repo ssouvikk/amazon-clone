@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { OrderRepository } from '../repositories/order.repository';
 import { CartService } from '../../cart/services/cart.service';
 import { ProductService } from '../../product/services/product.service';
@@ -27,13 +23,9 @@ export class OrderService {
     // 1. Validate Stock & Prepare Order Items
     const orderItems = [];
     for (const item of cart.items) {
-      const product = await this.productService.findProductById(
-        item.productId.toString(),
-      );
+      const product = await this.productService.findProductById(item.productId.toString());
       if (product.stock < item.quantity) {
-        throw new BadRequestException(
-          `Insufficient stock for product: ${product.title}`,
-        );
+        throw new BadRequestException(`Insufficient stock for product: ${product.title}`);
       }
       orderItems.push({
         productId: item.productId,
@@ -46,10 +38,7 @@ export class OrderService {
     const updatedProducts = [];
     try {
       for (const item of cart.items) {
-        await this.productService.updateStock(
-          item.productId.toString(),
-          -item.quantity,
-        );
+        await this.productService.updateStock(item.productId.toString(), -item.quantity);
         updatedProducts.push({
           id: item.productId.toString(),
           qty: item.quantity,
@@ -58,7 +47,7 @@ export class OrderService {
 
       // 3. Create Order
       const order = await this.orderRepository.create({
-        userId: new Types.ObjectId(userId) as any,
+        userId: new Types.ObjectId(userId) as unknown as Types.ObjectId,
         items: orderItems,
         totalAmount: cart.totalAmount,
         status: OrderStatus.PENDING,
@@ -93,10 +82,7 @@ export class OrderService {
     return order;
   }
 
-  async updateOrderStatus(
-    id: string,
-    status: OrderStatus,
-  ): Promise<OrderDocument> {
+  async updateOrderStatus(id: string, status: OrderStatus): Promise<OrderDocument> {
     const order = await this.orderRepository.updateStatus(id, status);
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);

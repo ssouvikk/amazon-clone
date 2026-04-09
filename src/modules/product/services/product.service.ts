@@ -19,17 +19,16 @@ export class ProductService {
   }
 
   async findAllProducts(
-    query: any,
+    query: Record<string, unknown>,
   ): Promise<{ items: ProductDocument[]; total: number }> {
-    const items = await this.productRepository.findAll(query);
-    const total = await this.productRepository.count(query);
+    const [items, total] = await Promise.all([
+      this.productRepository.findAll(query),
+      this.productRepository.count(query),
+    ]);
     return { items, total };
   }
 
-  async updateProduct(
-    id: string,
-    updateData: Partial<Product>,
-  ): Promise<ProductDocument> {
+  async updateProduct(id: string, updateData: Partial<Product>): Promise<ProductDocument> {
     const product = await this.productRepository.update(id, updateData);
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);

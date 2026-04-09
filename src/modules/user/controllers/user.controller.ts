@@ -12,7 +12,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('profile')
-  async getProfile(@Req() req: any): Promise<ApiResponse<any>> {
+  async getProfile(@Req() req: { user: { userId: string } }): Promise<ApiResponse<unknown>> {
     const user = await this.userService.findById(req.user.userId);
     return {
       success: true,
@@ -25,13 +25,10 @@ export class UserController {
 
   @Patch('profile')
   async updateProfile(
-    @Req() req: any,
-    @Body() updateData: any,
-  ): Promise<ApiResponse<any>> {
-    const user = await this.userService.updateProfile(
-      req.user.userId,
-      updateData,
-    );
+    @Req() req: { user: { userId: string } },
+    @Body() updateData: Record<string, unknown>,
+  ): Promise<ApiResponse<unknown>> {
+    const user = await this.userService.updateProfile(req.user.userId, updateData);
     return {
       success: true,
       message: 'Profile updated successfully',
@@ -43,7 +40,7 @@ export class UserController {
 
   @Get()
   @Roles(UserRole.ADMIN)
-  async getAllUsers(): Promise<ApiResponse<any>> {
+  async getAllUsers(): Promise<ApiResponse<unknown>> {
     const users = await this.userService.findAllUsers();
     return {
       success: true,

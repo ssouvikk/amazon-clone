@@ -6,9 +6,7 @@ import { ICartRepository } from '../interfaces/cart.repository.interface';
 
 @Injectable()
 export class CartRepository implements ICartRepository {
-  constructor(
-    @InjectModel(Cart.name) private readonly cartModel: Model<CartDocument>,
-  ) {}
+  constructor(@InjectModel(Cart.name) private readonly cartModel: Model<CartDocument>) {}
 
   async create(userId: string): Promise<CartDocument> {
     const newCart = new this.cartModel({ userId, items: [], totalAmount: 0 });
@@ -16,24 +14,16 @@ export class CartRepository implements ICartRepository {
   }
 
   async findByUserId(userId: string): Promise<CartDocument | null> {
-    return await this.cartModel
-      .findOne({ userId })
-      .populate('items.productId')
-      .exec();
+    return await this.cartModel.findOne({ userId }).populate('items.productId').exec();
   }
 
-  async update(
-    userId: string,
-    cart: Partial<Cart>,
-  ): Promise<CartDocument | null> {
+  async update(userId: string, cart: Partial<Cart>): Promise<CartDocument | null> {
     return await this.cartModel
       .findOneAndUpdate({ userId }, cart, { new: true, upsert: true })
       .exec();
   }
 
   async clear(userId: string): Promise<void> {
-    await this.cartModel
-      .findOneAndUpdate({ userId }, { items: [], totalAmount: 0 })
-      .exec();
+    await this.cartModel.findOneAndUpdate({ userId }, { items: [], totalAmount: 0 }).exec();
   }
 }
