@@ -12,4 +12,10 @@ export const envValidationSchema = Joi.object({
   JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
   COOKIE_SECRET: Joi.string().required(),
   BCRYPT_SALT_ROUNDS: Joi.number().default(10),
+  // Cache & Redis
+  CACHE_TTL: Joi.number().default(60000),
+  CACHE_MAX: Joi.number().default(100),
+  USE_REDIS: Joi.boolean().default(false),
+  REDIS_HOST: Joi.string().default('localhost'),
+  REDIS_PORT: Joi.number().port().default(6379),
 });

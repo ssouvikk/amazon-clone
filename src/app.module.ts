@@ -8,6 +8,7 @@ import { AppService } from './app.service';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
 import authConfig from './config/auth.config';
+import cacheConfig from './config/cache.config';
 import { envValidationSchema } from './config/env.validation';
 import { AllExceptionsFilter } from './shared/filters/http-exception.filter';
 import { LoggingInterceptor } from './shared/interceptors/logging.interceptor';
@@ -23,7 +24,7 @@ import { SharedModule } from './shared/shared.module';
     SharedModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, authConfig],
+      load: [appConfig, databaseConfig, authConfig, cacheConfig],
       validationSchema: envValidationSchema,
       validationOptions: {
         allowUnknown: true,
@@ -34,10 +35,28 @@ import { SharedModule } from './shared/shared.module';
     CacheModule.registerAsync({
       isGlobal: true,
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        ttl: configService.get<number>('cache.ttl') || 60000, // default 60s
-        max: configService.get<number>('cache.max') || 100, // default 100 items
-      }),
+      useFactory: async (configService: ConfigService) => {
+        const useRedis = configService.get<boolean>('cache.redis.useRedis');
+        const ttl = configService.get<number>('cache.ttl');
+
+        if (useRedis) {
+          const { redisStore } = await import('cache-manager-redis-yet');
+          return {
+            store: await redisStore({
+              socket: {
+                host: configService.get<string>('cache.redis.host'),
+                port: configService.get<number>('cache.redis.port'),
+              },
+              ttl,
+            }),
+          };
+        }
+
+        return {
+          ttl,
+          max: configService.get<number>('cache.max'),
+        };
+      },
       inject: [ConfigService],
     }),
     UserModule,
