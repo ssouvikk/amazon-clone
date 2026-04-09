@@ -12,7 +12,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 export class AllExceptionsFilter implements ExceptionFilter {
   private readonly logger = new Logger(AllExceptionsFilter.name);
 
-  catch(exception: unknown, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<FastifyReply>();
     const request = ctx.getRequest<FastifyRequest>();
@@ -22,20 +22,25 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    const message =
+    const res =
       exception instanceof HttpException
         ? exception.getResponse()
         : 'Internal server error';
+
+    const message =
+      typeof res === 'string'
+        ? res
+        : (res as Record<string, unknown>)['message'] || res;
 
     this.logger.error(
       `Http Status: ${status} Error: ${JSON.stringify(message)}`,
     );
 
-    response.status(status).send({
+    void response.status(status).send({
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
-      message: typeof message === 'string' ? message : (message as any).message || message,
+      message,
     });
   }
 }

@@ -9,7 +9,7 @@ import helmet from '@fastify/helmet';
 import compression from '@fastify/compress';
 import { AppModule } from './app.module';
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
@@ -22,7 +22,7 @@ async function bootstrap() {
 
   // Security
   await app.register(helmet);
-  
+
   // CORS
   app.enableCors();
 
@@ -45,6 +45,8 @@ async function bootstrap() {
   );
 
   await app.listen(port, '0.0.0.0');
-  logger.log(`Application is running on: http://localhost:${port}/${apiPrefix}`);
+  logger.log(
+    `Application is running on: http://localhost:${port}/${apiPrefix}`,
+  );
 }
-bootstrap();
+void bootstrap();
