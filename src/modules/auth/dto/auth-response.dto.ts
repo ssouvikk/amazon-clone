@@ -29,5 +29,5 @@ export class RefreshResponseDto {
 
 export class LogoutResponseDto {
   @ApiProperty({ example: null, nullable: true })
-  data!: null;
+  data?: unknown;
 }
