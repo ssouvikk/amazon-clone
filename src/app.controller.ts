@@ -3,6 +3,7 @@ import { AppService } from './app.service';
 import { TOKENS } from './shared/constants/tokens';
 import { ILogger } from './shared/interfaces/logger.interface';
 import { IRequestContext } from './shared/interfaces/request-context.interface';
+import { IDbConnection } from './shared/interfaces/db-connection.interface';
 
 @Controller()
 export class AppController {
@@ -10,11 +11,11 @@ export class AppController {
     private readonly appService: AppService,
     @Inject(TOKENS.LOGGER) private readonly logger: ILogger,
     @Inject(TOKENS.REQUEST_CONTEXT) private readonly requestContext: IRequestContext,
-    @Inject(TOKENS.DB_CONNECTION) private readonly db: any,
+    @Inject(TOKENS.DB_CONNECTION) private readonly db: IDbConnection,
   ) {}
 
   @Get()
-  getHello(): any {
+  getHello(): Record<string, unknown> {
     this.logger.log(`Request ID: ${this.requestContext.requestId}`, 'AppController');
     this.logger.log(
       `Request Time: ${this.requestContext.requestTime.toISOString()}`,

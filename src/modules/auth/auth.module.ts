@@ -17,8 +17,9 @@ import { TOKENS } from '../../shared/constants/tokens';
       useFactory: (configService: ConfigService): JwtModuleOptions => ({
         secret: configService.get<string>('auth.jwtSecret')!,
         signOptions: {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          expiresIn: configService.get<string>('auth.jwtExpiresIn') as any,
+          expiresIn: configService.get<string | number>('auth.jwtExpiresIn') as NonNullable<
+            JwtModuleOptions['signOptions']
+          >['expiresIn'],
         },
       }),
     }),

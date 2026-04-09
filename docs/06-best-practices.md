@@ -25,6 +25,7 @@ This document guides developers on writing clean, maintainable, and well-designe
 ### Clean Code Practices
 - **SOLID**: All classes should adhere to Single Responsibility and Dependency Inversion principles.
 - **DRY**: Use utility functions (living in `src/shared/utils`) or shared services to reduce code duplication.
+- **Strict Type Safety**: Use of the `any` type is strictly forbidden. Always define interfaces or use appropriate utility types (like `Record<string, unknown>`) to ensure compile-time safety and better developer experience.
 
 ## How It Works
 - **Request Cycle**: Every request goes through a standard cycle (Pipes -> Interceptors -> Controller -> Service -> Interceptor -> Filter).

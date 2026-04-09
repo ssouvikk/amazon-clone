@@ -4,6 +4,8 @@ import { TOKENS } from './constants/tokens';
 import { LoggerService } from './services/logger.service';
 import { RequestContextService } from './services/request-context.service';
 
+import { IDbConnection } from './interfaces/db-connection.interface';
+
 /**
  * Global SharedModule providing cross-cutting concerns like logging,
  * config, and request context using various DI patterns.
@@ -24,7 +26,7 @@ import { RequestContextService } from './services/request-context.service';
     // 3. Factory Provider (DB Connection simulation)
     {
       provide: TOKENS.DB_CONNECTION,
-      useFactory: (configService: ConfigService): Record<string, unknown> => {
+      useFactory: (configService: ConfigService): IDbConnection => {
         const dbUri = configService.get<string>('database.uri');
         // Simulate async DB connection
         return {

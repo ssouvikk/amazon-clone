@@ -27,7 +27,14 @@ On every commit, Husky runs `lint-staged`, which:
 
 If any non-fixable errors remain, the commit will fail, ensuring that only high-quality code reaches the repository.
 
-## Configuration Files
+## ESLint Rules & Type Safety
+
+The project enforces strict ESLint rules to maintain high code quality:
+- **`no-explicit-any`**: Prevents the use of the `any` type. Always prefer strongly typed interfaces.
+- **`no-unsafe-assignment`**: Prevents assigning `any` values to variables or properties.
+- **`explicit-module-boundary-types`**: Ensures all public methods of controllers and services have explicit return types.
+
+If a third-party library has poor typing, use safe type assertions like `as NonNullable<Type['property']>` instead of `as any`.
 
 - `eslint.config.mjs`: ESLint flat configuration.
 - `.prettierrc`: Prettier formatting rules.
