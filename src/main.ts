@@ -9,6 +9,7 @@ import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 import { TransformInterceptor } from './shared/interceptors/transform.interceptor';
 import { LoggingInterceptor } from './shared/interceptors/logging.interceptor';
+import { UserContextInterceptor } from './shared/interceptors/user-context.interceptor';
 
 async function bootstrap(): Promise<void> {
   const logger = new Logger('Bootstrap');
@@ -54,7 +55,11 @@ async function bootstrap(): Promise<void> {
   app.useGlobalFilters(new GlobalExceptionFilter());
 
   // Global Interceptors
-  app.useGlobalInterceptors(new LoggingInterceptor(), new TransformInterceptor());
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(),
+    new TransformInterceptor(),
+    new UserContextInterceptor(),
+  );
 
   await app.listen(port, '0.0.0.0');
   logger.log(`Application is running on: http://localhost:${port}/${apiPrefix}`);
