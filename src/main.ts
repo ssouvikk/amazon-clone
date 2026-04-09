@@ -15,7 +15,12 @@ async function bootstrap(): Promise<void> {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter({ logger: true }),
+    new FastifyAdapter({
+      logger: true,
+      bodyLimit: 1048576, // 1MB
+      trustProxy: true,
+      keepAliveTimeout: 60000, // 60s
+    }),
   );
 
   const configService = app.get(ConfigService);
