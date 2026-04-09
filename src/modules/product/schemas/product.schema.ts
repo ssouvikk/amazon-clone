@@ -35,6 +35,11 @@ export const ProductSchema = SchemaFactory.createForClass(Product);
 // Full-text search index
 ProductSchema.index({ title: 'text', description: 'text' });
 
+// Optimized filtering and sorting indexes
+ProductSchema.index({ category: 1, createdAt: -1 });
+ProductSchema.index({ isDeleted: 1, createdAt: -1 });
+ProductSchema.index({ price: 1 });
+
 // Stock validation hook
 ProductSchema.pre('save', function (this: ProductDocument) {
   if (this.stock < 0) {

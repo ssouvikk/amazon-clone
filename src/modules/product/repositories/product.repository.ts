@@ -17,7 +17,10 @@ export class ProductRepository implements IProductRepository {
   }
 
   async findById(id: string): Promise<ProductDocument | null> {
-    return this.productModel.findOne({ _id: id, isDeleted: false }).exec();
+    return this.productModel
+      .findOne({ _id: id, isDeleted: false })
+      .lean()
+      .exec() as Promise<ProductDocument | null>;
   }
 
   async findAll(query: Record<string, unknown>): Promise<ProductDocument[]> {
@@ -40,6 +43,9 @@ export class ProductRepository implements IProductRepository {
     type FilterType = Parameters<Model<ProductDocument>['find']>[0];
     const findQuery = this.productModel.find(queryBuilder as unknown as FilterType);
 
+    // Apply projection: exclude heavy fields for list view
+    findQuery.select('-description -specifications -reviews');
+
     if (search) {
       findQuery.select({ score: { $meta: 'textScore' } });
       findQuery.sort({ score: { $meta: 'textScore' } } as unknown as
@@ -49,13 +55,16 @@ export class ProductRepository implements IProductRepository {
       findQuery.sort({ createdAt: -1 } as unknown as string | Record<string, SortOrder>);
     }
 
-    return findQuery.skip(Number(skip)).limit(Number(limit)).exec();
+    return findQuery.skip(Number(skip)).limit(Number(limit)).lean().exec() as Promise<
+      ProductDocument[]
+    >;
   }
 
   async update(id: string, product: Partial<Product>): Promise<ProductDocument | null> {
     return this.productModel
       .findOneAndUpdate({ _id: id, isDeleted: false }, product, { new: true })
-      .exec();
+      .lean()
+      .exec() as Promise<ProductDocument | null>;
   }
 
   async delete(id: string): Promise<void> {
