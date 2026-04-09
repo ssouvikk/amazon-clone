@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { TOKENS } from '../../../shared/constants/tokens';
 import { IUserService } from '../../user/interfaces/user.service.interface';
 import { IAuthService } from '../interfaces/auth.service.interface';
-import * as bcrypt from 'bcrypt';
 import { LoginDto } from '../dto/login.dto';
 import { RegisterDto } from '../dto/register.dto';
 import { UserDocument } from '../../user/schemas/user.schema';
@@ -25,7 +24,7 @@ export class AuthService implements IAuthService {
 
   async validateUser(loginDto: LoginDto): Promise<UserDocument> {
     const user = await this.userService.getUserByEmail(loginDto.email);
-    if (user && (await bcrypt.compare(loginDto.password, user.password))) {
+    if (user && (await user.comparePassword(loginDto.password))) {
       return user;
     }
     throw new UnauthorizedException('Invalid credentials');
@@ -45,13 +44,8 @@ export class AuthService implements IAuthService {
       expiresIn: this.configService.get<string>('auth.jwtRefreshExpiresIn') as string,
     });
 
-    // Hash and store refresh token in DB
-    const saltRounds = this.configService.get<number>('auth.bcryptSaltRounds')!;
-    const hashedRefreshToken = await bcrypt.hash(refreshToken, saltRounds);
-
-    await this.userService.updateUser(userId, {
-      refreshToken: hashedRefreshToken,
-    });
+    // Save refresh token - Note: UserSchema pre-save hook handles hashing
+    await this.userService.updateUser(userId, { refreshToken });
 
     return { accessToken, refreshToken };
   }
