@@ -10,24 +10,27 @@ export class OrderRepository implements IOrderRepository {
 
   async create(order: Partial<Order>): Promise<OrderDocument> {
     const newOrder = new this.orderModel(order);
-    return await newOrder.save();
+    return newOrder.save();
   }
 
   async findById(id: string): Promise<OrderDocument | null> {
-    return await this.orderModel.findById(id).populate('items.productId').exec();
+    return this.orderModel
+      .findOne({ _id: id, isDeleted: false })
+      .populate('items.productId')
+      .exec();
   }
 
   async findByUserId(userId: string): Promise<OrderDocument[]> {
-    return await this.orderModel
-      .find({ userId })
+    return this.orderModel
+      .find({ userId, isDeleted: false })
       .populate('items.productId')
       .sort({ createdAt: -1 })
       .exec();
   }
 
   async findAll(): Promise<OrderDocument[]> {
-    return await this.orderModel
-      .find()
+    return this.orderModel
+      .find({ isDeleted: false })
       .populate('items.productId')
       .populate('userId', 'email name')
       .sort({ createdAt: -1 })
@@ -35,6 +38,8 @@ export class OrderRepository implements IOrderRepository {
   }
 
   async updateStatus(id: string, status: OrderStatus): Promise<OrderDocument | null> {
-    return await this.orderModel.findByIdAndUpdate(id, { status }, { new: true }).exec();
+    return this.orderModel
+      .findOneAndUpdate({ _id: id, isDeleted: false }, { status }, { new: true })
+      .exec();
   }
 }

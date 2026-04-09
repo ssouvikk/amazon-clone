@@ -16,11 +16,14 @@ export class OrderItem {
   @Prop({ type: Types.ObjectId, ref: 'Product', required: true })
   productId!: Types.ObjectId;
 
+  @Prop({ required: true, trim: true })
+  titleSnapshot!: string;
+
   @Prop({ required: true, min: 1 })
   quantity!: number;
 
   @Prop({ required: true, min: 0 })
-  priceFixed!: number;
+  priceSnapshot!: number;
 }
 
 const OrderItemSchema = SchemaFactory.createForClass(OrderItem);
@@ -38,6 +41,12 @@ export class Order {
 
   @Prop({ type: String, enum: OrderStatus, default: OrderStatus.PENDING })
   status!: OrderStatus;
+
+  @Prop({ default: false })
+  isDeleted!: boolean;
+
+  @Prop()
+  deletedAt?: Date;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);
