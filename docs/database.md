@@ -12,8 +12,10 @@ This document outlines the MongoDB schema design, relationships, and indexing st
 
 ### User
 - **Schema**: Stores user credentials and profile information.
+- **Fields**: `email`, `password`, `name`, `role`, `isDeleted`, `deletedAt`.
 - **Indexes**: Unique index on `email`.
-- **Security**: Password hashing implemented via Mongoose pre-save hooks.
+- **Soft Delete**: Implemented with `isDeleted` flag and `deletedAt` timestamp.
+- **Security**: Password hashing implemented via Mongoose pre-save hook using `bcrypt`.
 
 ### Product
 - **Schema**: Catalog information including price, stock, and images.

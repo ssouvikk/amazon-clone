@@ -10,26 +10,30 @@ export class UserRepository implements IUserRepository {
 
   async create(user: Partial<User>): Promise<UserDocument> {
     const newUser = new this.userModel(user);
-    return await newUser.save();
+    return newUser.save();
   }
 
   async findByEmail(email: string): Promise<UserDocument | null> {
-    return await this.userModel.findOne({ email }).select('+password').exec();
+    return this.userModel.findOne({ email, isDeleted: false }).select('+password').exec();
   }
 
   async findById(id: string): Promise<UserDocument | null> {
-    return await this.userModel.findById(id).exec();
+    return this.userModel.findOne({ _id: id, isDeleted: false }).exec();
   }
 
   async findAll(): Promise<UserDocument[]> {
-    return await this.userModel.find().exec();
+    return this.userModel.find({ isDeleted: false }).exec();
   }
 
   async update(id: string, user: Partial<User>): Promise<UserDocument | null> {
-    return await this.userModel.findByIdAndUpdate(id, user, { new: true }).exec();
+    return this.userModel
+      .findOneAndUpdate({ _id: id, isDeleted: false }, user, { new: true })
+      .exec();
   }
 
   async delete(id: string): Promise<void> {
-    await this.userModel.findByIdAndDelete(id).exec();
+    await this.userModel
+      .findOneAndUpdate({ _id: id, isDeleted: false }, { isDeleted: true, deletedAt: new Date() })
+      .exec();
   }
 }

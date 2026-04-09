@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import * as bcrypt from 'bcrypt';
 
 export type UserDocument = User & Document;
 
@@ -22,8 +23,17 @@ export class User {
   @Prop({ type: String, enum: UserRole, default: UserRole.USER })
   role!: UserRole;
 
-  @Prop({ default: true })
-  isActive!: boolean;
+  @Prop({ default: false })
+  isDeleted!: boolean;
+
+  @Prop()
+  deletedAt?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.pre('save', async function (this: UserDocument) {
+  if (this.isModified('password')) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+});
