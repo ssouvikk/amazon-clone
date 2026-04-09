@@ -10,6 +10,7 @@ import authConfig from './config/auth.config';
 import { envValidationSchema } from './config/env.validation';
 import { AllExceptionsFilter } from './shared/filters/http-exception.filter';
 import { LoggingInterceptor } from './shared/interceptors/logging.interceptor';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { LoggingInterceptor } from './shared/interceptors/logging.interceptor';
         uri: configService.get<string>('database.uri'),
       }),
     }),
+    UserModule,
   ],
   controllers: [AppController],
   providers: [
