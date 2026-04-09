@@ -1,16 +1,21 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { OrderRepository } from '../repositories/order.repository';
-import { CartService } from '../../cart/services/cart.service';
-import { ProductService } from '../../product/services/product.service';
+import { Inject, Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { TOKENS } from '../../../shared/constants/tokens';
+import { IOrderRepository } from '../interfaces/order.repository.interface';
+import { ICartService } from '../../cart/interfaces/cart.service.interface';
+import { IProductService } from '../../product/interfaces/product.service.interface';
+import { IOrderService } from '../interfaces/order.service.interface';
 import { OrderDocument, OrderStatus } from '../schemas/order.schema';
 import { Types } from 'mongoose';
 
 @Injectable()
-export class OrderService {
+export class OrderService implements IOrderService {
   constructor(
-    private readonly orderRepository: OrderRepository,
-    private readonly cartService: CartService,
-    private readonly productService: ProductService,
+    @Inject(TOKENS.ORDER_REPOSITORY)
+    private readonly orderRepository: IOrderRepository,
+    @Inject(TOKENS.CART_SERVICE)
+    private readonly cartService: ICartService,
+    @Inject(TOKENS.PRODUCT_SERVICE)
+    private readonly productService: IProductService,
   ) {}
 
   async createOrderFromCart(userId: string): Promise<OrderDocument> {

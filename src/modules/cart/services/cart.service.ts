@@ -1,14 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CartRepository } from '../repositories/cart.repository';
-import { ProductService } from '../../product/services/product.service';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { TOKENS } from '../../../shared/constants/tokens';
+import { ICartRepository } from '../interfaces/cart.repository.interface';
+import { IProductService } from '../../product/interfaces/product.service.interface';
+import { ICartService } from '../interfaces/cart.service.interface';
 import { CartDocument } from '../schemas/cart.schema';
 import { Types } from 'mongoose';
 
 @Injectable()
-export class CartService {
+export class CartService implements ICartService {
   constructor(
-    private readonly cartRepository: CartRepository,
-    private readonly productService: ProductService,
+    @Inject(TOKENS.CART_REPOSITORY)
+    private readonly cartRepository: ICartRepository,
+    @Inject(TOKENS.PRODUCT_SERVICE)
+    private readonly productService: IProductService,
   ) {}
 
   async getCart(userId: string): Promise<CartDocument> {

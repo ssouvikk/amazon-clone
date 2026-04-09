@@ -9,15 +9,20 @@ import {
   UseGuards,
   Req,
   HttpStatus,
+  Inject,
 } from '@nestjs/common';
-import { CartService } from '../services/cart.service';
+import { TOKENS } from '../../../shared/constants/tokens';
+import { ICartService } from '../interfaces/cart.service.interface';
 import { JwtAuthGuard } from '../../../shared/guards/jwt-auth.guard';
 import { ApiResponse } from '../../../shared/interfaces/api-response.interface';
 
 @Controller('cart')
 @UseGuards(JwtAuthGuard)
 export class CartController {
-  constructor(private readonly cartService: CartService) {}
+  constructor(
+    @Inject(TOKENS.CART_SERVICE)
+    private readonly cartService: ICartService,
+  ) {}
 
   @Get()
   async getCart(@Req() req: { user: { userId: string } }): Promise<ApiResponse<unknown>> {

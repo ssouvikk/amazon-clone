@@ -1,5 +1,15 @@
-import { Controller, Post, Body, UseGuards, Req, HttpCode, HttpStatus } from '@nestjs/common';
-import { AuthService } from '../services/auth.service';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Req,
+  HttpCode,
+  HttpStatus,
+  Inject,
+} from '@nestjs/common';
+import { TOKENS } from '../../../shared/constants/tokens';
+import { IAuthService } from '../interfaces/auth.service.interface';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
 import { JwtAuthGuard } from '../../../shared/guards/jwt-auth.guard';
@@ -7,7 +17,10 @@ import { ApiResponse } from '../../../shared/interfaces/api-response.interface';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    @Inject(TOKENS.AUTH_SERVICE)
+    private readonly authService: IAuthService,
+  ) {}
 
   @Post('register')
   async register(@Body() registerDto: RegisterDto): Promise<ApiResponse<unknown>> {

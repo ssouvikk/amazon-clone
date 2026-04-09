@@ -8,8 +8,10 @@ import {
   UseGuards,
   Req,
   HttpStatus,
+  Inject,
 } from '@nestjs/common';
-import { OrderService } from '../services/order.service';
+import { TOKENS } from '../../../shared/constants/tokens';
+import { IOrderService } from '../interfaces/order.service.interface';
 import { JwtAuthGuard } from '../../../shared/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../shared/guards/roles.guard';
 import { Roles } from '../../../shared/decorators/roles.decorator';
@@ -20,7 +22,10 @@ import { ApiResponse } from '../../../shared/interfaces/api-response.interface';
 @Controller('orders')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(
+    @Inject(TOKENS.ORDER_SERVICE)
+    private readonly orderService: IOrderService,
+  ) {}
 
   @Post('checkout')
   async checkout(@Req() req: { user: { userId: string } }): Promise<ApiResponse<unknown>> {
