@@ -15,6 +15,7 @@ import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { JwtAuthGuard } from '../../../shared/guards/jwt-auth.guard';
+import { JwtRefreshGuard } from '../guards/jwt-refresh.guard';
 import { ApiResponse } from '../../../shared/interfaces/api-response.interface';
 
 @Controller('auth')
@@ -72,7 +73,7 @@ export class AuthController {
   }
 
   @Post('refresh')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtRefreshGuard)
   @HttpCode(HttpStatus.OK)
   async refresh(
     @Req() req: FastifyRequest & { user: { email: string; sub: string; role: string } },

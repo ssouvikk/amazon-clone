@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { AuthController } from './controllers/auth.controller';
 import { AuthService } from './services/auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { UserModule } from '../user/user.module';
 import { TOKENS } from '../../shared/constants/tokens';
 
@@ -31,7 +32,8 @@ import { TOKENS } from '../../shared/constants/tokens';
       useClass: AuthService,
     },
     JwtStrategy,
+    JwtRefreshStrategy,
   ],
-  exports: [TOKENS.AUTH_SERVICE, JwtStrategy, PassportModule],
+  exports: [TOKENS.AUTH_SERVICE, JwtStrategy, JwtRefreshStrategy, PassportModule],
 })
 export class AuthModule {}
