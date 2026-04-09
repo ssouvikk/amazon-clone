@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { ProductController } from './controllers/product.controller';
 import { ProductService } from './services/product.service';
 import { ProductRepository } from './repositories/product.repository';
@@ -21,10 +23,10 @@ import { TOKENS } from '../../shared/constants/tokens';
     // 2. Factory Provider for Product Service
     {
       provide: TOKENS.PRODUCT_SERVICE,
-      useFactory: (repo: IProductRepository): IProductService => {
-        return new ProductService(repo);
+      useFactory: (repo: IProductRepository, cacheManager: Cache): IProductService => {
+        return new ProductService(repo, cacheManager);
       },
-      inject: [TOKENS.PRODUCT_REPOSITORY],
+      inject: [TOKENS.PRODUCT_REPOSITORY, CACHE_MANAGER],
     },
     // 3. Existing Provider (Alias)
     {
