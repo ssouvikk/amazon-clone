@@ -9,6 +9,7 @@ import {
   Inject,
   Res,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody, ApiCookieAuth } from '@nestjs/swagger';
 import { TOKENS } from '../../../shared/constants/tokens';
 import { IAuthService } from '../interfaces/auth.service.interface';
 import { RegisterDto } from '../dto/register.dto';
@@ -17,7 +18,18 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { JwtAuthGuard } from '../../../shared/guards/jwt-auth.guard';
 import { JwtRefreshGuard } from '../guards/jwt-refresh.guard';
 import { ApiResponse } from '../../../shared/interfaces/api-response.interface';
+import {
+  ApiSuccessResponse,
+  ApiErrorResponses,
+} from '../../../shared/decorators/swagger.decorator';
+import {
+  LoginResponseDto,
+  RefreshResponseDto,
+  AuthUserDto,
+  LogoutResponseDto,
+} from '../dto/auth-response.dto';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -26,6 +38,9 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiSuccessResponse(AuthUserDto, 'User registered successfully', true)
+  @ApiErrorResponses()
   async register(@Body() registerDto: RegisterDto): Promise<ApiResponse<unknown>> {
     const user = await this.authService.register(registerDto);
     return {
@@ -39,6 +54,10 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Login with email and password' })
+  @ApiBody({ type: LoginDto })
+  @ApiSuccessResponse(LoginResponseDto, 'Login successful')
+  @ApiErrorResponses()
   async login(
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) res: FastifyReply,
@@ -75,6 +94,10 @@ export class AuthController {
   @Post('refresh')
   @UseGuards(JwtRefreshGuard)
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Refresh access token using refresh cookie' })
+  @ApiCookieAuth('refresh_token')
+  @ApiSuccessResponse(RefreshResponseDto, 'Token refreshed successfully')
+  @ApiErrorResponses()
   async refresh(
     @Req() req: FastifyRequest & { user: { email: string; sub: string; role: string } },
   ): Promise<ApiResponse<unknown>> {
@@ -96,6 +119,10 @@ export class AuthController {
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Logout a user' })
+  @ApiBearerAuth('JWT-auth')
+  @ApiSuccessResponse(LogoutResponseDto, 'Logout successful')
+  @ApiErrorResponses()
   async logout(
     @Req() req: FastifyRequest & { user: { sub: string } },
     @Res({ passthrough: true }) res: FastifyReply,
